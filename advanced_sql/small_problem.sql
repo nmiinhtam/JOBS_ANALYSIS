@@ -5,7 +5,13 @@ Write a query to find the average salary both yearly and hourly
 Group the results by job schedule type.
 */
 
-
+SELECT 
+    job_title_short,
+    salary_year_avg,
+    salary_hour_avg,
+    job_schedule_type
+FROM job_postings_fact
+WHERE 
 
 /*
 Practice Problem 2
