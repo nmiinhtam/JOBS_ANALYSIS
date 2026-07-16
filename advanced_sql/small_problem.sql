@@ -6,12 +6,14 @@ Group the results by job schedule type.
 */
 
 SELECT 
-    job_title_short,
-    salary_year_avg,
-    salary_hour_avg,
-    job_schedule_type
+    job_schedule_type,
+    COUNT(job_title_short) AS job_count,
+    ROUND(AVG(salary_year_avg),0) AS yearly_salary,
+    ROUND(AVG(salary_hour_avg),0) AS hourly_salary    
 FROM job_postings_fact
 WHERE 
+    job_posted_date > DATE '2023-06-01' 
+GROUP BY job_schedule_type;
 
 /*
 Practice Problem 2
@@ -21,7 +23,12 @@ Write a query to count the number of job postings for each month in 2023,
 Assume the job_posted_date is stored in UTC. Group by and order by the month.
 */
 
-
+SELECT
+    EXTRACT(MONTH FROM job_posted_date) AS month,
+    COUNT(job_id)
+FROM job_postings_fact
+GROUP BY month
+ORDER BY month
 
 /*
 Practice Problem 3
@@ -30,16 +37,37 @@ Write a query to find companies (include company name) that have posted jobs off
 Use date extraction to filter by quarter.
 */
 
+SELECT DISTINCT
+    company_dim.name AS company_name
+FROM job_postings_fact
+LEFT JOIN company_dim ON job_postings_fact.company_id = company_dim.company_id
+WHERE 
+    EXTRACT(MONTH FROM job_posted_date) BETWEEN 4 AND 6
+    AND job_postings_fact.job_health_insurance = 'TRUE'
+
 
 
 /* SubQuery & CTE
 Practice Problem 1
 Identify the top5 skills that are most frequently mentioned in job postings.
-Use aa subquery to find the skill IDs with the highest counts in the skills_job_dim
+Use a subquery to find the skill IDs with the highest counts in the skills_job_dim
     table and then join this result with the skills_dim table to get the skill names.
 */
 
-
+SELECT
+    skills_dim.skills,
+    total_skill.skill_count
+FROM (
+    SELECT
+        skill_id,
+        COUNT(*) AS skill_count
+    FROM skills_job_dim
+    GROUP BY skill_id
+    ORDER BY skill_count DESC
+    LIMIT 5
+) AS total_skill
+LEFT JOIN skills_dim ON total_skill.skill_id = skills_dim.skill_id
+ORDER BY total_skill.skill_count DESC;
 
 /* SubQuery & CTE
 Practice Problem 2
