@@ -73,10 +73,30 @@ ORDER BY total_skill.skill_count DESC;
 Practice Problem 2
 Determine the size category ('Small', 'Medium', or 'Large') for each company 
     by first identifying the number of job postings they have.
-Use aa subquery to calculate the total job postings per company.
+Use a subquery to calculate the total job postings per company.
 A company is considered 'Small' if it has less than 10 job postings, 
     'Medium' if the number of job postings is between 10 and 50,
     and 'Large' if it has more than 50 job postings.
 Implement a subquery to aggregate job counts per company before classifying them based on size.
 */
 
+WITH company_job_counts AS (
+    SELECT
+        company_id,
+        COUNT(job_id) AS total_job_postings
+    FROM job_postings_fact
+    GROUP BY company_id
+)
+
+SELECT
+    company_dim.company_id,
+    company_dim.name AS company_name,
+    company_job_counts.total_job_postings,
+    CASE
+        WHEN company_job_counts.total_job_postings < 10 THEN 'Small'
+        WHEN company_job_counts.total_job_postings BETWEEN 10 AND 50 THEN 'Medium'
+        ELSE 'Large'
+    END AS company_size
+FROM company_job_counts
+LEFT JOIN company_dim ON company_job_counts.company_id = company_dim.company_id
+ORDER BY company_job_counts.total_job_postings DESC;
