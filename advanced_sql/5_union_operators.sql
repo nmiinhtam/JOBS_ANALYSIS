@@ -68,3 +68,37 @@ PRACTICE PROBLEM 1
 - Includes those without any skills, too
 - Why? Look at the skills and the type for each job in the first quarter that has a salary > $70,000
 */
+
+WITH q1_jobs AS (
+    SELECT *
+    FROM january_jobs
+
+    UNION ALL
+
+    SELECT *
+    FROM february_jobs
+
+    UNION ALL
+
+    SELECT *
+    FROM march_jobs
+)
+
+SELECT
+    q1_jobs.job_id,
+    q1_jobs.job_title_short,
+    q1_jobs.salary_year_avg,
+    skills_dim.skills,
+    skills_dim.type AS skill_type
+FROM q1_jobs
+LEFT JOIN skills_job_dim ON q1_jobs.job_id = skills_job_dim.job_id
+LEFT JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
+/*
+NOTE: Using LEFT JOIN instead of INNER JOIN because 
+- With INNER JOIN, any job that has no matching record in skills_job_dim would disappear from the results.
+- With LEFT JOIN, those jobs remain, and the skills and skill_type columns will be NULL.
+*/
+WHERE q1_jobs.salary_year_avg > 70000
+ORDER BY
+    q1_jobs.job_id,
+    skills_dim.skills;
